@@ -9,11 +9,12 @@ class AStarSolver:
         self.size = size
 
     def heuristic(self, state):
+        # Heuristic function to estimate distance to goal state
         score = 0
         for tube in state:
             if len(tube) == self.size:
                 if len(set(tube)) == 1:
-                    score -= 5  # Reward completely filled and uniform tubes
+                    score -= 10  # Reward completely filled and uniform tubes
                 else:
                     score += 1  # Penalize mixed color tubes
             elif not tube:
@@ -58,13 +59,14 @@ class AStarSolver:
         return None, num_steps
 
 
+
 if __name__ == "__main__":
     # Given puzzle instance
-    empty = 1
-    full = 3
-    size = 3
-    colors = 3
-    init =[[], [0, 1, 1], [2, 0, 1], [0, 2, 2]]
+    empty = 4
+    full = 10
+    size = 10
+    colors = 10
+    init = [[], [], [2, 2, 0, 0, 7, 3, 1, 1, 9, 0], [3, 3, 9, 7, 2, 8, 4, 0, 3, 6], [3, 5, 8, 5, 7, 0, 2, 9, 0, 0], [5, 0, 6, 4, 9, 2, 3, 7, 3, 9], [6, 4, 4, 9, 3, 1, 3, 3, 4, 4], [5, 7, 6, 7, 1, 8, 7, 2, 1, 7], [6, 8, 8, 4, 2, 6, 4, 5, 8, 1], [9, 9, 1, 7, 5, 0, 5, 1, 9, 1], [2, 5, 8, 1, 2, 4, 6, 7, 4, 6], [5, 0, 6, 8, 8, 5, 6, 8, 9, 2]]
     solver = AStarSolver(init, size=size)
 
     # Measure runtime
