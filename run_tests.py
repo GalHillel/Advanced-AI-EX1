@@ -1,15 +1,32 @@
+import json
 import time
 import signal
+from solver import AStarSolver
 from Instances import instances
-from solver import AStarSolver  # Assuming your solver is defined in solver.py
+
 
 class TimeoutException(Exception):
     pass
 
+
 def timeout_handler(signum, frame):
+    """
+    Signal handler for timeouts.
+
+    Args:
+        signum (int): Signal number.
+        frame (frame): Current stack frame.
+    """
     raise TimeoutException
 
-def run_tests():
+
+def run_tests(instances):
+    """
+    Runs test instances and logs results.
+
+    Args:
+        instances (list): List of test instances.
+    """
     results = []
 
     for idx, instance in enumerate(instances):
@@ -21,7 +38,7 @@ def run_tests():
         start_time = time.time()
 
         signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(20)  # Set the alarm for 50 seconds
+        signal.alarm(600)  # Set the alarm for 600 seconds
 
         try:
             solution, num_steps = solver.solve()
@@ -29,13 +46,25 @@ def run_tests():
             end_time = time.time()
 
             runtime = end_time - start_time
+            solution_length = len(solution) if solution else 0
+            solution_steps = solution if solution else "N/A"
             result = {
                 "instance": idx,
                 "runtime": runtime,
                 "num_steps": num_steps,
-                "solution_length": len(solution) if solution else None,
-                "solution": solution
+                "solution_length": solution_length,
+                "solution": solution_steps,
             }
+            print(f"Instance {idx}:")
+            print(f"Runtime: {runtime:.4f} seconds")
+            print(
+                f"Number of steps taken: {num_steps if num_steps is not None else 'N/A'}"
+            )
+            print(
+                f"Length of solution: {solution_length if solution_length > 0 else 'N/A'}"
+            )
+            print(f"Solution steps: {solution_steps}")
+            print("=" * 50)
         except TimeoutException:
             end_time = time.time()
             runtime = end_time - start_time
@@ -45,22 +74,22 @@ def run_tests():
                 "num_steps": None,
                 "solution_length": None,
                 "solution": None,
-                "timeout": True
+                "timeout": True,
             }
-            print(f"Test instance {idx} exceeded the time limit of 20 seconds and was stopped.")
-            break
+            print(
+                f"Test instance {idx} exceeded the time limit of 600 seconds and was stopped."
+            )
+            print("=" * 50)
 
         results.append(result)
+        with open("results.txt", "w") as file:
+            for result in results:
+                if isinstance(result["solution"], list):
+                    result["solution"] = json.dumps(
+                        result["solution"]
+                    )  # Convert solution to a JSON string
+            json.dump(results, file, indent=4)
 
-    for result in results:
-        print(f"Instance {result['instance']}:")
-        print(f"Runtime: {result['runtime']:.4f} seconds")
-        print(f"Number of steps taken: {result['num_steps'] if result['num_steps'] is not None else 'N/A'}")
-        print(f"Length of solution: {result['solution_length'] if result['solution_length'] is not None else 'N/A'}")
-        print(f"Solution steps: {result['solution'] if result['solution'] is not None else 'N/A'}")
-        if result.get('timeout'):
-            print("Status: Timeout")
-        print("="*50)
 
 if __name__ == "__main__":
-    run_tests()
+    run_tests(instances)
